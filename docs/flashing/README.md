@@ -19,6 +19,27 @@
 不要选成「ATmega328P (3.3V, 8 MHz)」：程序仍可能烧进去，但时钟配置错误会导致
 `millis()` 计时、串口波特率和控制周期全部偏离。
 
+## Sketch 文件组成
+
+本项目的 Arduino sketch 目录包含两个文件，**必须放在一起**：
+
+```text
+firmware/temp_control/
+├── temp_control.ino    主程序
+└── ui.h                OLED 界面绘制，被 .ino 直接 include
+```
+
+- `ui.h` 是纯头文件，编译时由 `#include "ui.h"` 自动读取，**不需要单独烧录**。
+- 烧录产物只有固件 `.hex`；`ui.h` 的代码已编译进固件，不占用 EEPROM。
+- Arduino IDE 打开 `temp_control.ino` 后，`ui.h` 会自动作为同一 sketch 的标签页出现，
+  直接「验证」或「上传」即可，不要把它当成独立项目。
+- 用 `arduino-cli` 时同样只指定目录：`arduino-cli compile ... firmware/temp_control`。
+- 复制工程到其他电脑时，必须连同 `ui.h` 一起复制；只拷 `.ino` 会在编译时报
+  `fatal error: ui.h: No such file or directory`。
+- 若 IDE 提示找不到 `ui.h`，先确认它在 `.ino` 同目录，并检查文件名大小写。
+
+`docs/oled/sim.cpp` 只是电脑端生成截图的仿真工具，不参与固件编译，也不需要烧录。
+
 ## 准备
 
 - Arduino Pro Mini 5V/16MHz 一块。
@@ -73,8 +94,8 @@ sudo usermod -aG dialout 你的用户名
 当前版本（U8g2 2.36.x、Arduino AVR 1.8.8）编译结果参考：
 
 ```text
-Sketch uses 21640 bytes (70%) of program storage space. Maximum is 30720 bytes.
-Global variables use 1236 bytes (60%) of dynamic memory, leaving 812 bytes for local variables. Maximum is 2048 bytes.
+Sketch uses 25490 bytes (82%) of program storage space. Maximum is 30720 bytes.
+Global variables use 1186 bytes (57%) of dynamic memory, leaving 862 bytes for local variables. Maximum is 2048 bytes.
 ```
 
 ## USB-TTL 接线
@@ -196,6 +217,7 @@ SET 32.0 HY 0.8 HEAT 0 | L1 ERR | L2 ERR | L3 ERR | L4 ERR | L5 ERR
 - [ ] 开发板选的是 **5V / 16MHz**
 - [ ] FQBN 是 `arduino:avr:pro:cpu=16MHzatmega328`
 - [ ] U8g2 库已安装
+- [ ] `ui.h` 与 `temp_control.ino` 在同一目录
 - [ ] TX/RX 已交叉，GND 已共地
 - [ ] USB-TTL 是 5V 档
 - [ ] 只使用一路电源（USB-TTL VCC / 外部 5V / RAW 三选一）
