@@ -17,10 +17,14 @@ temp_control/                       仓库根目录
 ├── README.md
 ├── .gitignore
 ├── docs/
-│   └── wiring/
-│       ├── wiring-diagram.svg      五层温控接线图
-│       ├── pro-mini-pin-map.svg    Pro Mini 引脚位置图
-│       └── generate.py             接线图生成脚本
+│   ├── wiring/
+│   │   ├── wiring-diagram.svg      五层温控接线图
+│   │   ├── pro-mini-pin-map.svg    Pro Mini 引脚位置图
+│   │   └── generate.py             接线图生成脚本
+│   └── oled/
+│       ├── README.md               OLED 操作说明
+│       ├── screen-*.png            各状态界面截图
+│       └── render.py               界面图生成脚本
 └── firmware/
     └── temp_control/               Arduino sketch 目录
         └── temp_control.ino        主程序
@@ -105,6 +109,8 @@ python3 docs/wiring/generate.py
 | 任意操作    | 唤醒屏幕                         |
 
 屏幕第一行用方括号标出正在编辑的项，例如 `[SET 32.0C] HY 0.8C`。
+
+完整的界面说明、各状态截图与状态机见 [docs/oled/README.md](docs/oled/README.md)。
 
 ## 关键参数
 
