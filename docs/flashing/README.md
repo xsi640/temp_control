@@ -151,7 +151,7 @@ SET 32.0 HY 0.8 HEAT 0 | L1 ERR | L2 ERR | L3 ERR | L4 ERR | L5 ERR
 
 - 第一行出现 `5-channel temp controller ready`，说明固件已运行。
 - 之后每秒输出一行状态；没有接 NTC 时显示 `ERR` 且 SSR 关闭，这是正常现象。
-- OLED 应显示 `SET 32.0C  HY 0.8C`，下面 5 行对应 5 个通道。
+- OLED 顶部应显示大号 `32.0C`，右上角为 `HY 0.8C` 和 `HEAT 0/5`，下面 5 行对应 5 个通道。
 - 如果之前保存过设定值，`SET` 可能不是 32.0，这是 EEPROM 恢复的结果，不是烧录失败。
 
 ## 常见烧录错误

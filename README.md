@@ -154,10 +154,13 @@ python3 docs/wiring/generate.py
 | 30 秒无操作 | 息屏（控制继续运行） |
 | 任意操作 | 唤醒屏幕 |
 
-屏幕第一行用方括号标出正在编辑的项，例如 `[SET 32.0C] HY 0.8C`。
+正在编辑的设定值或回差区域会反色高亮，界面预览与细节见下方 OLED 文档。
 
 设定值与回差在**退出编辑模式时**立即写入 EEPROM（长按、超时 10 秒或短按循环回运行界面），
 一次编辑会话只擦写一次；掉电重启自动恢复。
+
+![OLED 运行界面](docs/oled/screen-run-heat.png)
+
 完整的界面说明、各状态截图与状态机见 [docs/oled/README.md](docs/oled/README.md)。
 
 ## 关键参数

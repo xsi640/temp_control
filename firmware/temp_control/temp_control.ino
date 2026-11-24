@@ -39,10 +39,14 @@
 #include <math.h>
 #include <EEPROM.h>
 #include <U8g2lib.h>
+#include "ui.h"
 
 // ====================== 基础参数 ======================
 
 #define LAYER_COUNT     5     // 温控通道数
+#if UI_CHANNELS != LAYER_COUNT
+#error "UI_CHANNELS must match LAYER_COUNT"
+#endif
 #define FILTER_SAMPLES  8     // 滑动平均滤波窗口长度（每通道独立缓冲）
 #define ADC_SAMPLES     5     // 每次测温的 ADC 采样次数（取平均抗干扰）
 
@@ -118,7 +122,6 @@ static uint32_t btnPressedAt = 0;
 static bool     btnLongFired = false;
 
 // 界面状态
-enum UiMode : uint8_t { UI_RUN, UI_SET_TEMP, UI_SET_HYST };
 static UiMode   uiMode = UI_RUN;
 static bool     displayOn = true;
 
@@ -426,6 +429,7 @@ static void pollButton(uint32_t now) {
       btnPressedAt = now;
       btnLongFired = false;
       wakeDisplay(now);
+      if (uiMode != UI_RUN) lastEditAt = now;
     } else if (!btnLongFired) {
       onShortPress(now);
     }
@@ -467,9 +471,21 @@ static bool snapshotEquals(const DisplaySnapshot &a, const DisplaySnapshot &b) {
   return true;
 }
 
+static void buildUiState(UiFrameState &st) {
+  st.mode = (uint8_t)uiMode;
+  st.target = targetTemp;
+  st.hyst = hysteresis;
+  st.heatCount = heatCount;
+
+  for (uint8_t i = 0; i < LAYER_COUNT; i++) {
+    st.ch[i].temp = layerTemp[i];
+    st.ch[i].valid = layerValid[i];
+    st.ch[i].on = ssrOn[i];
+  }
+}
+
 /*
- * 刷新屏幕。第一行是设定温度 / 回差（方括号表示正在编辑的项），
- * 其余五行是各通道温度与加热状态。
+ * 刷新屏幕：界面绘制在 ui.h 中，离线截图使用同一份代码。
  * 与上次绘制内容完全相同则直接返回，避免无意义的整屏 I2C 传输。
  */
 static void refreshDisplay() {
@@ -480,37 +496,12 @@ static void refreshDisplay() {
     return;
   }
 
-  char buf[24];
-  char f1[8];
-  char f2[8];
+  UiFrameState st;
+  buildUiState(st);
 
   oled.firstPage();
   do {
-    oled.setFont(u8g2_font_6x10_tf);
-
-    dtostrf(targetTemp, 4, 1, f1);
-    dtostrf(hysteresis, 3, 1, f2);
-
-    if (uiMode == UI_SET_TEMP) {
-      snprintf(buf, sizeof(buf), "[SET %sC] HY %sC", f1, f2);
-    } else if (uiMode == UI_SET_HYST) {
-      snprintf(buf, sizeof(buf), "SET %sC [HY %sC]", f1, f2);
-    } else {
-      snprintf(buf, sizeof(buf), "SET %sC  HY %sC", f1, f2);
-    }
-    oled.drawStr(0, 9, buf);
-
-    for (uint8_t i = 0; i < LAYER_COUNT; i++) {
-      int y = 19 + i * 10;
-      if (layerValid[i]) {
-        dtostrf(layerTemp[i], 4, 1, f1);
-        snprintf(buf, sizeof(buf), "%u %sC %s", (unsigned)(i + 1), f1,
-                 ssrOn[i] ? "HEAT" : "----");
-      } else {
-        snprintf(buf, sizeof(buf), "%u   ERR  OFF", (unsigned)(i + 1));
-      }
-      oled.drawStr(0, y, buf);
-    }
+    uiDrawFrame(oled, st);
   } while (oled.nextPage());
 
   shownSnapshot = cur;

@@ -23,3 +23,7 @@ desktop.ini
 # 本地临时文件
 .tmp/
 .playwright-mcp/
+# OLED 仿真临时产物
+.tmp-*
+docs/oled/sim
+docs/oled/frame-*.pbm
