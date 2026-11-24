@@ -3,7 +3,7 @@
 
 坐标与固件一致：
   U8g2 字体 u8g2_font_6x10_tf，字符步进 6px
-  第一行基线 y=9，其后每层 y = 19 + i*10
+  第一行基线 y=9，其后每个通道 y = 19 + i*10
   面板 128x64
 
 用法：
@@ -30,7 +30,7 @@ def esc(s):
 
 
 def render(lines):
-    """lines: 6 个字符串（第 1 行为表头，其余为 5 层）。None 表示该行不画。"""
+    """lines: 6 个字符串（第 1 行为表头，其余为 5 个通道）。None 表示该行不画。"""
     b = []
     b.append('<rect x="0" y="0" width="%s" height="%s" rx="12" fill="%s"/>'
              % (W, H, BEZEL))
@@ -63,7 +63,7 @@ def write(name, lines):
 
 
 STATES = [
-    # 文件名, 表头, 5 层内容
+    # 文件名, 表头, 5 个通道内容
     ("screen-run-heat.svg", "SET 32.0C  HY 0.8C", [
         "1 31.4C HEAT",
         "2 30.9C HEAT",

@@ -5,7 +5,7 @@
     python3 docs/wiring/generate.py
 
 输出：
-    docs/wiring/wiring-diagram.svg     五层温控接线图（含编码器 / OLED）
+    docs/wiring/wiring-diagram.svg     五路温控接线图（含编码器 / OLED）
     docs/wiring/pro-mini-pin-map.svg   Arduino Pro Mini 引脚位置图
 """
 
@@ -110,7 +110,7 @@ def ntc_sym(x, y_top, h=64, w=26):
 # ---------------------------------------------------------------- 主接线图
 
 ROWS = [
-    # 层, y, 数字引脚, 模拟引脚, AVR 数字端口, AVR 模拟端口
+    # 通道, y, 数字引脚, 模拟引脚, AVR 数字端口, AVR 模拟端口
     (1, 300, "D5", "A0", "PD5", "PC0"),
     (2, 460, "D6", "A1", "PD6", "PC1"),
     (3, 620, "D7", "A2", "PD7", "PC2"),
@@ -134,12 +134,15 @@ def wiring_diagram():
     b = []
 
     # 标题
-    b.append(text(60, 64, "五层爬柜温控系统 · 接线图", 30, INK, weight=700))
+    b.append(text(60, 64, "五路温控系统 · 接线图", 30, INK, weight=700))
     b.append(text(60, 98,
                   "Arduino Pro Mini (ATmega328P, 5V/16MHz) · NTC 10kΩ B3950 上拉接法 · "
                   "SSR 开关加热 · EC11 编码器 · SSD1306 OLED",
                   15, SUB))
-    b.append(line(60, 124, 1580, 124, stroke="#dbe3ec", sw=1.6))
+    b.append(text(60, 120,
+                  "5 路独立控温 · 爬柜、孵化箱、恒温箱等场景通用",
+                  13, SUB))
+    b.append(line(60, 140, 1580, 140, stroke="#dbe3ec", sw=1.6))
 
     b.append(text(150, 214, "⚠ 220V 强电区：接线前必须断电", 13, LOAD_LINE, weight=700))
 
@@ -170,13 +173,13 @@ def wiring_diagram():
                       stroke=LOAD_LINE, sw=2.2, rx=6))
         b.append(text((LX0 + LX1) / 2.0, y - 26, "加热器", 14.5, LOAD_LINE,
                       anchor="middle", weight=700))
-        b.append(text((LX0 + LX1) / 2.0, y - 8, "层%d · 220V~" % layer, 11.5,
+        b.append(text((LX0 + LX1) / 2.0, y - 8, "通道%d · 220V~" % layer, 11.5,
                       LOAD_LINE, anchor="middle"))
 
         # ---- SSR
         b.append(rect(SX0, y - 55, SX1 - SX0, 100, fill=SSR_FILL,
                       stroke=SSR_LINE, sw=2.2, rx=8))
-        b.append(text((SX0 + SX1) / 2.0, y - 33, "SSR 层%d" % layer, 15, SSR_LINE,
+        b.append(text((SX0 + SX1) / 2.0, y - 33, "SSR 通道%d" % layer, 15, SSR_LINE,
                       anchor="middle", weight=700))
         b.append(text((SX0 + SX1) / 2.0, y - 19, "固态继电器", 10, SUB,
                       anchor="middle"))
@@ -220,7 +223,7 @@ def wiring_diagram():
         b.append(gnd_sym(NODE, y + 104, label=False))
         b.append(text(1215, y + 68, "NTC 10kΩ", 12, NTC, weight=600))
         b.append(text(NODE + 28, y + 118, "GND", 11, FAINT, weight=600))
-        b.append(text(NODE, y - 10, "层%d 测温" % layer, 11.5, FAINT, anchor="middle"))
+        b.append(text(NODE, y - 10, "通道%d 测温" % layer, 11.5, FAINT, anchor="middle"))
 
     # ---------------- 控制面板：编码器 + OLED ----------------
     b.append(text(60, 1136, "控制与显示（弱电）", 15, UI_LINE, weight=700))
@@ -305,8 +308,8 @@ def wiring_diagram():
     b.append(text(60, 1412, "接线要点", 14.5, INK, weight=700))
     notes_a = [
         "NTC 与 10kΩ 上拉电阻串联分压，中点接 A0 / A1 / A2 / A3 / A6",
-        "层1→A0 / 层2→A1 / 层3→A2 / 层4→A3 / 层5→A6（层5 用 ADC6，仅模拟输入）",
-        "层1→D5 / 层2→D6 / 层3→D7 / 层4→D8 / 层5→D9，接 SSR 输入正极",
+        "通道1→A0 / 通道2→A1 / 通道3→A2 / 通道4→A3 / 通道5→A6（通道5 用 ADC6，仅模拟输入）",
+        "通道1→D5 / 通道2→D6 / 通道3→D7 / 通道4→D8 / 通道5→D9，接 SSR 输入正极",
         "编码器 A→D2、B→D3、按键→D4，编码器公共脚接 GND",
         "OLED：SDA→A4、SCL→A5、VCC→5V、GND→GND",
     ]
@@ -317,7 +320,7 @@ def wiring_diagram():
     notes_b = [
         "改线前必须断电；220V 与弱电分区走线，禁止并行缠绕",
         "单 I/O 最大 20mA，5 路 SSR 输入电流需分别核算，超限加三极管",
-        "Pro Mini 无 USB，需 FTDI/ISP 烧录；外部供电接 RAW (7–12V)",
+        "Pro Mini 无 USB，需 FTDI/ISP 烧录；供电用 RAW 7–12V 或稳压 5V 接 VCC",
         "5 路同时加热时电流较大，5V 电源与地线需留足余量",
     ]
     for i, s in enumerate(notes_b):
@@ -343,20 +346,20 @@ LEFT_ANN = {
     "D2": ("编码器 A", "sig"),
     "D3": ("编码器 B", "sig"),
     "D4": ("编码器按键", "sig"),
-    "D5": ("层1 SSR", "sig"),
-    "D6": ("层2 SSR", "sig"),
-    "D7": ("层3 SSR", "sig"),
-    "D8": ("层4 SSR", "sig"),
-    "D9": ("层5 SSR", "sig"),
+    "D5": ("通道1 SSR", "sig"),
+    "D6": ("通道2 SSR", "sig"),
+    "D7": ("通道3 SSR", "sig"),
+    "D8": ("通道4 SSR", "sig"),
+    "D9": ("通道5 SSR", "sig"),
 }
 RIGHT_ANN = {
     "RAW": ("7–12V 输入（可选）", "pwr"),
     "GND": ("公共地", "gnd"),
     "VCC": ("NTC 上拉 / OLED", "pwr"),
-    "A3": ("层4 NTC", "sig"),
-    "A2": ("层3 NTC", "sig"),
-    "A1": ("层2 NTC", "sig"),
-    "A0": ("层1 NTC", "sig"),
+    "A3": ("通道4 NTC", "sig"),
+    "A2": ("通道3 NTC", "sig"),
+    "A1": ("通道2 NTC", "sig"),
+    "A0": ("通道1 NTC", "sig"),
 }
 
 PILL = {
@@ -366,7 +369,7 @@ PILL = {
 }
 
 HEADER = [("A5", "SCL → OLED", "sig"), ("A4", "SDA → OLED", "sig"),
-          ("A7", "未使用", "none"), ("A6", "层5 NTC", "sig")]
+          ("A7", "未使用", "none"), ("A6", "通道5 NTC", "sig")]
 
 
 def pin_map():
@@ -466,5 +469,5 @@ def write(name, w, h, body, title):
 
 
 if __name__ == "__main__":
-    write("wiring-diagram.svg", W, H, wiring_diagram(), "五层爬柜温控系统接线图")
+    write("wiring-diagram.svg", W, H, wiring_diagram(), "五路温控系统接线图")
     write("pro-mini-pin-map.svg", PW, PH, pin_map(), "Arduino Pro Mini 引脚位置图")

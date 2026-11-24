@@ -1,10 +1,10 @@
 /*
-五层爬柜温控系统 - 主控代码（上拉电阻接法 + 旋转编码器 + OLED）
+五路温控系统 - 主控代码（上拉电阻接法 + 旋转编码器 + OLED，可用于爬柜等场景）
 
 功能概述：
-  通过 5 路 NTC 热敏电阻采集爬柜温度，经 ADC 多次采样、滑动平均滤波后，
+  通过 5 路 NTC 热敏电阻采集各通道温度，经 ADC 多次采样、滑动平均滤波后，
   与设定温度比较，采用带回差的开关控制驱动 SSR 加热。
-  旋转编码器可在线调节「设定温度」与「回差」，OLED 实时显示各层温度与加热状态，
+  旋转编码器可在线调节「设定温度」与「回差」，OLED 实时显示各通道温度与加热状态，
   无操作时自动息屏，任意按键或旋转即唤醒。
 
 【接线方式：上拉电阻】
@@ -17,8 +17,8 @@
   NTC 阻值公式：R_NTC = R_上拉 × ADC / (1023 - ADC)
 
 引脚分配（Arduino Pro Mini 5V/16MHz）：
-  NTC   ：层1 A0 / 层2 A1 / 层3 A2 / 层4 A3 / 层5 A6（A6 仅作模拟输入）
-  SSR   ：层1 D5 / 层2 D6 / 层3 D7 / 层4 D8 / 层5 D9（高电平导通）
+  NTC   ：通道1 A0 / 通道2 A1 / 通道3 A2 / 通道4 A3 / 通道5 A6（A6 仅作模拟输入）
+  SSR   ：通道1 D5 / 通道2 D6 / 通道3 D7 / 通道4 D8 / 通道5 D9（高电平导通）
   编码器：A 相 D2 / B 相 D3 / 按键 D4（按键另一端接 GND，使用内部上拉）
   OLED  ：I2C，SDA = A4 / SCL = A5，地址 0x3C
 
@@ -42,8 +42,8 @@
 
 // ====================== 基础参数 ======================
 
-#define LAYER_COUNT     5     // 温控层数
-#define FILTER_SAMPLES  8     // 滑动平均滤波窗口长度（每层独立缓冲）
+#define LAYER_COUNT     5     // 温控通道数
+#define FILTER_SAMPLES  8     // 滑动平均滤波窗口长度（每通道独立缓冲）
 #define ADC_SAMPLES     5     // 每次测温的 ADC 采样次数（取平均抗干扰）
 
 #define R_REF      10000.0    // 上拉电阻阻值（Ω），接在 VCC 与 ADC 引脚之间
@@ -68,10 +68,10 @@
 
 // ====================== 引脚定义 ======================
 
-// NTC 模拟输入：层1→A0，层2→A1，层3→A2，层4→A3，层5→A6
+// NTC 模拟输入：通道1→A0，通道2→A1，通道3→A2，通道4→A3，通道5→A6
 const uint8_t NTC_PINS[LAYER_COUNT] = {A0, A1, A2, A3, A6};
 
-// SSR 控制：层1→D5，层2→D6，层3→D7，层4→D8，层5→D9（高电平导通）
+// SSR 控制：通道1→D5，通道2→D6，通道3→D7，通道4→D8，通道5→D9（高电平导通）
 const uint8_t SSR_PINS[LAYER_COUNT] = {5, 6, 7, 8, 9};
 
 #define ENC_A_PIN    2   // 编码器 A 相（INT0）
@@ -101,7 +101,7 @@ static float   targetTemp = DEFAULT_TARGET;
 static float   hysteresis = DEFAULT_HYST;
 static uint8_t heatCount  = 0;
 static uint8_t faultCount = 0;
-static uint8_t faultMask   = 0;   // 每 bit 对应一层是否故障
+static uint8_t faultMask   = 0;   // 每 bit 对应一个通道是否故障
 static uint8_t prevFaultMask = 0;
 
 // 编码器（中断内更新）
@@ -128,7 +128,7 @@ struct DisplaySnapshot {
   int16_t targetC10;
   int16_t hystC10;
   int16_t layerC10[LAYER_COUNT];
-  uint8_t flags[LAYER_COUNT];   // bit0 = 该层读数有效，bit1 = 正在加热
+  uint8_t flags[LAYER_COUNT];   // bit0 = 该通道读数有效，bit1 = 正在加热
 };
 #define DISPLAY_INVALID (-32768)
 static DisplaySnapshot shownSnapshot;
@@ -264,9 +264,9 @@ static bool isTempValid(float t) {
 
 // ====================== 采样 + 滑动平均 ======================
 
-// 采样单层并更新滤波值。
+// 采样单通道并更新滤波值。
 // 首次得到有效读数时用它填满整个缓冲区，避免启动瞬间均值偏低导致误加热。
-// NAN 读数不写入缓冲区，直接标记该层无效；同时清除播种标志，使恢复后
+// NAN 读数不写入缓冲区，直接标记该通道无效；同时清除播种标志，使恢复后
 // 的第一帧重新填满缓冲区，避免残留故障前的旧温度拉偏均值（可能导致
 // 实际已超温仍在加热）。
 static void sampleLayer(uint8_t layer) {
@@ -300,7 +300,7 @@ static void sampleLayer(uint8_t layer) {
   layerValid[layer] = isTempValid(avg);
 }
 
-// ====================== 单层温控 ======================
+// ====================== 单通道温控 ======================
 
 /*
  * 带回差的开关控制：异常强制关断；加热中升到 目标+回差 才停；
@@ -469,7 +469,7 @@ static bool snapshotEquals(const DisplaySnapshot &a, const DisplaySnapshot &b) {
 
 /*
  * 刷新屏幕。第一行是设定温度 / 回差（方括号表示正在编辑的项），
- * 其余五行是各层温度与加热状态。
+ * 其余五行是各通道温度与加热状态。
  * 与上次绘制内容完全相同则直接返回，避免无意义的整屏 I2C 传输。
  */
 static void refreshDisplay() {
@@ -617,7 +617,7 @@ void loop() {
     lastControlAt = now;
     runControlCycle();
 
-    // 出现新故障（按层比较，避免“一层恢复+一层新增”被漏判）时唤醒屏幕
+    // 出现新故障（按通道比较，避免“一个通道恢复+另一个通道新增”被漏判）时唤醒屏幕
     if (faultMask & ~prevFaultMask) {
       wakeDisplay(now);
     }
