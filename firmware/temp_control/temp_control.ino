@@ -32,9 +32,12 @@
   5. 回差控制                  —— 防止 SSR 在目标温度附近频繁抖动
   6. 超温/低温软件保护          —— 温度越界立即强制关闭加热
   7. NAN 统一处理              —— 任何异常读数均视为不安全，直接关断
+  8. 设定值掉电保存            —— 存于 EEPROM，带魔数/版本/CRC8 校验
+  9. 按内容刷新屏幕            —— 显示内容未变时不重绘，减少 I2C 流量
 */
 
 #include <math.h>
+#include <EEPROM.h>
 #include <U8g2lib.h>
 
 // ====================== 基础参数 ======================
@@ -51,7 +54,7 @@
 #define R_NTC_MIN  50.0       // NTC 电阻下限（Ω），低于视为短路/异常
 
 #define TEMP_MAX_LIMIT  45.0  // 软件超温保护上限（℃）
-#define TEMP_MIN_LIMIT  0.0   // 软件低温保护下限（℃）
+#define TEMP_MIN_LIMIT  (-20.0) // 软件低温保护下限（℃），须低于预期最低环境温度
 
 #define TARGET_MIN      10.0  // 设定温度可调下限（℃）
 #define TARGET_MAX      40.0  // 设定温度可调上限（℃）
@@ -98,7 +101,8 @@ static float   targetTemp = DEFAULT_TARGET;
 static float   hysteresis = DEFAULT_HYST;
 static uint8_t heatCount  = 0;
 static uint8_t faultCount = 0;
-static uint8_t prevFaultCount = 0;
+static uint8_t faultMask   = 0;   // 每 bit 对应一层是否故障
+static uint8_t prevFaultMask = 0;
 
 // 编码器（中断内更新）
 static volatile int32_t encRaw  = 0;
@@ -117,13 +121,92 @@ static bool     btnLongFired = false;
 enum UiMode : uint8_t { UI_RUN, UI_SET_TEMP, UI_SET_HYST };
 static UiMode   uiMode = UI_RUN;
 static bool     displayOn = true;
-static bool     displayDirty = true;
+
+// 上次绘制的内容快照。新一帧文本与之完全相同时跳过整屏刷新。
+struct DisplaySnapshot {
+  uint8_t mode;
+  int16_t targetC10;
+  int16_t hystC10;
+  int16_t layerC10[LAYER_COUNT];
+  uint8_t flags[LAYER_COUNT];   // bit0 = 该层读数有效，bit1 = 正在加热
+};
+#define DISPLAY_INVALID (-32768)
+static DisplaySnapshot shownSnapshot;
+static bool shownValid = false;   // false = 需要强制重绘（唤醒后/首帧）
 static uint32_t lastActivity = 0;
 static uint32_t lastEditAt = 0;
 static uint32_t lastControlAt = 0;
 
 // OLED：SSD1306 128x64，硬件 I2C，页缓冲模式（省 RAM）
 U8G2_SSD1306_128X64_NONAME_1_HW_I2C oled(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
+
+// ====================== 设定值持久化（EEPROM） ======================
+
+#define CFG_ADDR      0
+#define CFG_MAGIC     0x5443   // 'TC'
+#define CFG_VERSION   1
+
+// 落盘格式：魔数 + 版本 + CRC8，任一不符即视为无效数据，回退默认值。
+// 温度以 0.1℃ 为单位的整数存储，避免浮点表示差异导致读回值抖动。
+struct PersistConfig {
+  uint16_t magic;
+  uint8_t  version;
+  int16_t  targetC10;   // 设定温度 x 10
+  int16_t  hystC10;     // 回差 x 10
+  uint8_t  crc;         // 前面各字节的 CRC8
+};
+
+static bool     configDirty   = false;   // 有未落盘改动，退出编辑模式时写入
+
+static uint8_t crc8(const uint8_t *data, size_t len) {
+  uint8_t crc = 0x00;
+  for (size_t i = 0; i < len; i++) {
+    crc ^= data[i];
+    for (uint8_t b = 0; b < 8; b++) {
+      crc = (crc & 0x80) ? (uint8_t)((crc << 1) ^ 0x07) : (uint8_t)(crc << 1);
+    }
+  }
+  return crc;
+}
+
+// 从 EEPROM 读取设定值。数据无效或超出可调范围时返回 false。
+static bool loadConfig() {
+  PersistConfig cfg;
+  EEPROM.get(CFG_ADDR, cfg);
+
+  if (cfg.magic != CFG_MAGIC || cfg.version != CFG_VERSION) return false;
+  if (crc8((const uint8_t *)&cfg, offsetof(PersistConfig, crc)) != cfg.crc) return false;
+
+  float t = cfg.targetC10 / 10.0f;
+  float h = cfg.hystC10 / 10.0f;
+
+  if (t < TARGET_MIN || t > TARGET_MAX) return false;
+  if (h < HYST_MIN || h > HYST_MAX) return false;
+
+  targetTemp = t;
+  hysteresis = h;
+  return true;
+}
+
+// 当前设定值写入 EEPROM。仅在退出编辑模式时调用，避免频繁擦写缩短寿命。
+static void saveConfig() {
+  PersistConfig cfg;
+  cfg.magic     = CFG_MAGIC;
+  cfg.version   = CFG_VERSION;
+  cfg.targetC10 = (int16_t)lroundf(targetTemp * 10.0f);
+  cfg.hystC10   = (int16_t)lroundf(hysteresis * 10.0f);
+  cfg.crc       = crc8((const uint8_t *)&cfg, offsetof(PersistConfig, crc));
+
+  EEPROM.put(CFG_ADDR, cfg);
+  configDirty = false;
+}
+
+// 有改动才写入。退出编辑模式时调用，一次编辑只擦写一次 EEPROM。
+static void flushConfig() {
+  if (configDirty) {
+    saveConfig();
+  }
+}
 
 // ====================== ADC 稳定读取 ======================
 
@@ -181,17 +264,18 @@ static bool isTempValid(float t) {
 
 // ====================== 采样 + 滑动平均 ======================
 
-/*
- * 采样单层并更新滤波值。
- * 首次得到有效读数时用它填满整个缓冲区，避免启动瞬间均值偏低导致误加热。
- * NAN 读数不写入缓冲区，直接标记该层无效。
- */
+// 采样单层并更新滤波值。
+// 首次得到有效读数时用它填满整个缓冲区，避免启动瞬间均值偏低导致误加热。
+// NAN 读数不写入缓冲区，直接标记该层无效；同时清除播种标志，使恢复后
+// 的第一帧重新填满缓冲区，避免残留故障前的旧温度拉偏均值（可能导致
+// 实际已超温仍在加热）。
 static void sampleLayer(uint8_t layer) {
   float t = readNtcTemp(NTC_PINS[layer]);
 
   if (isnan(t)) {
     layerTemp[layer]  = NAN;
     layerValid[layer] = false;
+    filterSeeded[layer] = false;
     return;
   }
 
@@ -261,9 +345,10 @@ void encoderISR() {
  */
 static int readEncoderSteps() {
   int32_t raw;
-  noInterrupts();
+  uint8_t sreg = SREG;          // 保存并恢复中断状态，避免误开全局中断
+  cli();
   raw = encRaw;
-  interrupts();
+  SREG = sreg;
 
   encRemainder += raw - encLastRaw;
   encLastRaw = raw;
@@ -280,7 +365,7 @@ static void wakeDisplay(uint32_t now) {
   if (!displayOn) {
     displayOn = true;
     oled.setPowerSave(0);
-    displayDirty = true;
+    shownValid = false;        // 屏幕刚恢复供电，内容需重画
   }
 }
 
@@ -294,14 +379,16 @@ static void onShortPress(uint32_t now) {
     uiMode = UI_SET_HYST;
   } else {
     uiMode = UI_RUN;
+    flushConfig();          // 退出编辑模式：立即落盘
   }
-  displayDirty = true;
 }
 
 static void onLongPress(uint32_t now) {
   wakeDisplay(now);
+  if (uiMode != UI_RUN) {
+    flushConfig();          // 退出编辑模式：立即落盘
+  }
   uiMode = UI_RUN;
-  displayDirty = true;
 }
 
 static void onRotate(int steps, uint32_t now) {
@@ -321,7 +408,7 @@ static void onRotate(int steps, uint32_t now) {
   }
 
   lastEditAt  = now;
-  displayDirty = true;
+  configDirty   = true;
 }
 
 static void pollButton(uint32_t now) {
@@ -352,11 +439,47 @@ static void pollButton(uint32_t now) {
 
 // ====================== 显示 ======================
 
+// 把「屏幕将要显示的内容」压缩成快照，用于判断是否需要重绘。
+// 温度按 0.1℃ 量化，与 dtostrf(x, 4, 1) 的显示精度一致。
+static void captureSnapshot(DisplaySnapshot &snap) {
+  snap.mode      = (uint8_t)uiMode;
+  snap.targetC10 = (int16_t)lroundf(targetTemp * 10.0f);
+  snap.hystC10   = (int16_t)lroundf(hysteresis * 10.0f);
+
+  for (uint8_t i = 0; i < LAYER_COUNT; i++) {
+    if (layerValid[i]) {
+      snap.layerC10[i] = (int16_t)lroundf(layerTemp[i] * 10.0f);
+      snap.flags[i]    = (uint8_t)(0x01u | (ssrOn[i] ? 0x02u : 0x00u));
+    } else {
+      snap.layerC10[i] = DISPLAY_INVALID;
+      snap.flags[i]    = 0;
+    }
+  }
+}
+
+static bool snapshotEquals(const DisplaySnapshot &a, const DisplaySnapshot &b) {
+  if (a.mode != b.mode || a.targetC10 != b.targetC10 || a.hystC10 != b.hystC10) {
+    return false;
+  }
+  for (uint8_t i = 0; i < LAYER_COUNT; i++) {
+    if (a.layerC10[i] != b.layerC10[i] || a.flags[i] != b.flags[i]) return false;
+  }
+  return true;
+}
+
 /*
- * 第一行：设定温度 / 回差（方括号表示当前正在编辑的项）
- * 其余五行：各层温度与加热状态
+ * 刷新屏幕。第一行是设定温度 / 回差（方括号表示正在编辑的项），
+ * 其余五行是各层温度与加热状态。
+ * 与上次绘制内容完全相同则直接返回，避免无意义的整屏 I2C 传输。
  */
-static void drawScreen() {
+static void refreshDisplay() {
+  DisplaySnapshot cur;
+  captureSnapshot(cur);
+
+  if (shownValid && snapshotEquals(cur, shownSnapshot)) {
+    return;
+  }
+
   char buf[24];
   char f1[8];
   char f2[8];
@@ -389,6 +512,9 @@ static void drawScreen() {
       oled.drawStr(0, y, buf);
     }
   } while (oled.nextPage());
+
+  shownSnapshot = cur;
+  shownValid    = true;
 }
 
 // ====================== 串口日志 ======================
@@ -420,12 +546,16 @@ static void logStatus() {
 static void runControlCycle() {
   heatCount  = 0;
   faultCount = 0;
+  faultMask  = 0;
 
   for (uint8_t i = 0; i < LAYER_COUNT; i++) {
     sampleLayer(i);
     controlLayer(i);
     if (ssrOn[i]) heatCount++;
-    if (!layerValid[i]) faultCount++;
+    if (!layerValid[i]) {
+      faultCount++;
+      faultMask |= (uint8_t)(1u << i);
+    }
   }
 
   logStatus();
@@ -458,6 +588,11 @@ void setup() {
   oled.begin();
   oled.setPowerSave(0);
 
+  // 读取上次保存的设定值；数据无效（首次上电/校验失败）时写入默认值
+  if (!loadConfig()) {
+    saveConfig();
+  }
+
   uint32_t now = millis();
   lastActivity  = now;
   lastEditAt    = now;
@@ -481,28 +616,26 @@ void loop() {
   if (now - lastControlAt >= CONTROL_INTERVAL_MS) {
     lastControlAt = now;
     runControlCycle();
-    displayDirty = true;
 
-    // 出现新故障时唤醒屏幕，提醒用户
-    if (faultCount > 0 && prevFaultCount == 0) {
+    // 出现新故障（按层比较，避免“一层恢复+一层新增”被漏判）时唤醒屏幕
+    if (faultMask & ~prevFaultMask) {
       wakeDisplay(now);
     }
-    prevFaultCount = faultCount;
+    prevFaultMask = faultMask;
   }
 
-  // 编辑模式超时自动退回运行界面
+  // 编辑模式超时自动退回运行界面，并立即落盘
   if (uiMode != UI_RUN && now - lastEditAt >= EDIT_TIMEOUT_MS) {
     uiMode = UI_RUN;
-    displayDirty = true;
+    flushConfig();
   }
 
   if (displayOn) {
     if (now - lastActivity >= SCREEN_SLEEP_MS) {
       displayOn = false;
       oled.setPowerSave(1);      // 息屏，控制继续运行
-    } else if (displayDirty) {
-      drawScreen();
-      displayDirty = false;
+    } else {
+      refreshDisplay();          // 内容无变化时内部直接返回，不刷新
     }
   }
 }

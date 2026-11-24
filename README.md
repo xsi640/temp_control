@@ -110,6 +110,8 @@ python3 docs/wiring/generate.py
 
 屏幕第一行用方括号标出正在编辑的项，例如 `[SET 32.0C] HY 0.8C`。
 
+设定值与回差在**退出编辑模式时**立即写入 EEPROM（长按、超时 10 秒或短按循环回运行界面），
+一次编辑会话只擦写一次；掉电重启自动恢复。
 完整的界面说明、各状态截图与状态机见 [docs/oled/README.md](docs/oled/README.md)。
 
 ## 关键参数
@@ -126,11 +128,12 @@ python3 docs/wiring/generate.py
 | `DEFAULT_TARGET` | 32.0 ℃    | 上电默认设定温度      |
 | `DEFAULT_HYST`   | 0.8 ℃     | 上电默认回差          |
 | `TEMP_MAX_LIMIT` | 45 ℃      | 超温保护上限          |
-| `TEMP_MIN_LIMIT` | 0 ℃       | 低温保护下限          |
+| `TEMP_MIN_LIMIT` | -20 ℃     | 低温保护下限          |
 | `FILTER_SAMPLES` | 8         | 滑动平均窗口          |
 | `ADC_SAMPLES`    | 5         | 单次测温 ADC 采样次数 |
 | `SCREEN_SLEEP_MS` | 30000   | 息屏时间              |
-| `EDIT_TIMEOUT_MS` | 10000   | 编辑超时退出          |
+| `EDIT_TIMEOUT_MS` | 10000   | 编辑超时退出            |
+| `CFG_ADDR` | 0 | 设定值在 EEPROM 中的起始地址 |
 
 ## 保护机制
 
@@ -139,8 +142,9 @@ python3 docs/wiring/generate.py
 - 8 点滑动平均滤波，异常读数不写入缓冲区
 - 首次有效读数填满缓冲区，避免启动瞬间均值偏低导致误加热
 - 回差控制，避免 SSR 在目标温度附近频繁通断
-- 超出 0–45 ℃ 范围立即关断加热
+- 超出 -20–45 ℃ 范围立即关断加热（低温下限须低于环境温度，否则会误判故障）
 - 出现新故障时自动唤醒屏幕提示
+- 设定值与回差保存在 EEPROM，掉电不丢失；校验失败时回退默认值
 
 ## 串口
 
