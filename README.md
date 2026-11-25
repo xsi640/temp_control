@@ -20,6 +20,7 @@
 | [烧录指南](docs/flashing/README.md) | USB-TTL 接线、Arduino IDE / arduino-cli、常见烧录错误 |
 | [调试指南](docs/debugging/README.md) | 上电顺序、NTC 校验表、串口日志、故障排查 |
 | [OLED 操作说明](docs/oled/README.md) | 界面说明、状态机与各状态截图 |
+| [洞洞板焊接图](docs/wiring/README.md) | 10×15cm 洞洞板布局、两页焊接图与逐条接线表 |
 
 ## 目录结构
 
@@ -40,6 +41,10 @@ temp_control/                       仓库根目录
 │   ├── wiring/
 │   │   ├── wiring-diagram.svg      五路温控接线图
 │   │   ├── pro-mini-pin-map.svg    Pro Mini 引脚位置图
+│   │   ├── perfboard-layout.svg    洞洞板焊接图（矢量）
+│   │   ├── perfboard-layout.png    洞洞板焊接图（截图）
+│   │   ├── perfboard.py            洞洞板图生成脚本
+│   │   ├── README.md               洞洞板焊接说明
 │   │   └── generate.py             接线图生成脚本
 │   └── oled/
 │       ├── README.md               OLED 操作说明
