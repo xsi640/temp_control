@@ -14,7 +14,8 @@ from xml.sax.saxutils import escape
 
 OUT = Path(__file__).with_name("bom-list.svg")
 
-W, H = 1400, 1440
+# 宽度固定；高度按表格行数在 build() 中计算，避免增删物料后被裁掉。
+W = 1400
 INK = "#16222f"
 SUB = "#5b6b7c"
 FAINT = "#8b98a6"
@@ -24,6 +25,7 @@ GREEN = "#2e7d4f"
 ORANGE = "#a85b1a"
 RED = "#b3261e"
 PURPLE = "#6b4fa3"
+TEAL = "#0f766e"
 
 FONT = ("system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', "
         "'PingFang SC', sans-serif")
@@ -65,6 +67,12 @@ ROWS = [
      ["25℃ 标称 10kΩ；B 值 3950；线长按柜体选"], ORANGE, "#fdf1e5"),
     ("传感", "金属膜电阻 10kΩ 1% 1/4W", "5",
      ["每路一只上拉；VCC → ADC → NTC → GND"], ORANGE, "#fdf1e5"),
+    ("去耦", "100nF 陶瓷电容（X7R 50V）", "10",
+     ["5 路 ADC + VCC / OLED / AREF / 5V 入口，另备 1 只", "靠近引脚安装，引线越短越好"], TEAL, "#e6f4f1"),
+    ("储能", "电解电容 470–1000µF / ≥16V 低 ESR", "1",
+     ["5V 入口并联，吸收 SSR 通断冲击", "再并一只 100nF 陶瓷"], TEAL, "#e6f4f1"),
+    ("滤波", "10nF 陶瓷电容", "2",
+     ["编码器 A / B 对 GND，消抖抗扰", "线长或误触发时再加"], TEAL, "#e6f4f1"),
     ("执行", "固态继电器 SSR（DC 控 AC）", "5",
      ["输入 3–32V DC；输出 24–380V AC", "按加热器电流 ≥2 倍选型，并配散热片"], RED, "#fdecea"),
     ("电源", "5V/1A 稳压电源适配器", "1",
@@ -81,6 +89,8 @@ ROWS = [
      ["绝缘、跳线与线束整理"], SUB, "#f1f4f7"),
     ("可选", "SSR 散热片 / 外壳 / 通风扇", "可选",
      ["按柜体结构与散热需求配置"], SUB, "#f1f4f7"),
+    ("可选", "NTC 长线 RC：1kΩ + 100nF", "可选",
+     ["板端 1kΩ 串联、100nF 到 GND", "长线或强电干扰场景再加"], SUB, "#f1f4f7"),
 ]
 
 CARD = [
@@ -92,6 +102,22 @@ CARD = [
 
 
 def build():
+    header_y, header_h = 392, 44
+    table_end = header_y + header_h + sum(58 if len(r[3]) == 1 else 72 for r in ROWS)
+    notes_y = table_end + 42
+    tips = [
+        "SSR 输入电流按实物规格核算，常见 10–15mA/路；5V 电源建议 ≥1A 并留余量。",
+        "NTC 与 10kΩ 上拉电阻直接决定测温精度，建议 1% 电阻、同批次 B3950 探头。",
+        "100nF 去耦电容靠近引脚安装；5V 入口加 470–1000µF 电解，抑制 SSR 通断冲击。",
+        "阻性加热负载可选过零型 SSR；感性负载需选随机型并按需加 RC 吸收。",
+        "清单为功能最小集；外壳、散热片、端子数量按柜体结构增减。",
+    ]
+    box_y, box_h = notes_y - 18, 132
+    footer_line_y = max(notes_y + 26 + (len(tips) - 1) * 23 + 8,
+                        box_y + box_h) + 28
+    footer_text_y = footer_line_y + 32
+    H = footer_text_y + 26
+
     b = []
     b.append('<svg xmlns="http://www.w3.org/2000/svg" width="%d" height="%d" '
              'viewBox="0 0 %d %d" font-family="%s">'
@@ -108,12 +134,12 @@ def build():
     b.append(text(64, 62, "BILL OF MATERIALS · TEMP_CONTROL", 12, FAINT, weight=700, spacing=1.6))
     b.append(text(64, 116, "五路温控系统 · 物料清单", 38, INK, weight=700))
     b.append(text(64, 151,
-                  "Arduino Pro Mini 5V/16MHz · 5 路 NTC 测温 · 5 路 SSR 加热 · OLED + 旋转编码器",
+                  "Arduino Pro Mini 5V/16MHz · 5 路 NTC 测温 · 5 路 SSR 加热 · OLED + 旋转编码器 · 含去耦电容",
                   15, SUB))
     b.append(text(64, 176, "可用于爬柜、孵化箱、恒温箱等需要多点独立控温的场景", 13, SUB))
 
     # 页眉标签
-    tags = [("BOM v1.0", 940, 54), ("2026-11", 1060, 42), ("firmware/temp_control", 1140, 190)]
+    tags = [("BOM v1.1", 940, 54), ("2026-11", 1060, 42), ("firmware/temp_control", 1140, 190)]
     for label, x, w in tags:
         b.append(rect(x, 186, w, 28, fill="#f6f8fb", stroke=LINE, sw=1, rx=14))
         b.append(text(x + w / 2, 205, label, 11.5, SUB, "middle", 600))
@@ -131,7 +157,6 @@ def build():
     b.append(text(228, 371, f"共 {len(ROWS)} 项 · 数量按 5 路配置", 12, FAINT))
 
     table_x, table_w = 64, 1272
-    header_y, header_h = 392, 44
     b.append(rect(table_x, header_y, table_w, header_h, fill=INK, rx=8))
     heads = [
         (86, "#", "middle"),
@@ -166,17 +191,11 @@ def build():
     # 底部说明
     notes_y = y + 42
     b.append(text(64, notes_y, "选型提示", 14.5, INK, weight=700))
-    tips = [
-        "SSR 输入电流按实物规格核算，常见 10–15mA/路；5V 电源建议 ≥1A 并留余量。",
-        "NTC 与 10kΩ 上拉电阻直接决定测温精度，建议 1% 电阻、同批次 B3950 探头。",
-        "阻性加热负载可选过零型 SSR；感性负载需选随机型并按需加 RC 吸收。",
-        "清单为功能最小集；外壳、散热片、端子数量按柜体结构增减。",
-    ]
     for i, tip in enumerate(tips):
         b.append(text(64, notes_y + 26 + i * 23, "· " + tip, 12, SUB))
 
     # 安全提示框
-    box_x, box_y, box_w, box_h = 760, notes_y - 18, 576, 132
+    box_x, box_w = 760, 576
     b.append(rect(box_x, box_y, box_w, box_h, fill="#fdecea", stroke=RED, sw=1.2, rx=10))
     b.append(text(box_x + 20, box_y + 28, "安全提示", 14, RED, weight=700))
     safe = [
@@ -188,9 +207,9 @@ def build():
         b.append(text(box_x + 20, box_y + 55 + i * 24, "· " + s, 11.8, "#7f1d1d"))
 
     # 页脚
-    b.append(line(64, 1390, 1336, 1390, LINE, 1.2))
-    b.append(text(64, 1422, "temp_control · 五路温控系统", 12, FAINT, weight=600))
-    b.append(text(1336, 1422, "BOM v1.0 · 2026-11", 12, FAINT, "end"))
+    b.append(line(64, footer_line_y, 1336, footer_line_y, LINE, 1.2))
+    b.append(text(64, footer_text_y, "temp_control · 五路温控系统", 12, FAINT, weight=600))
+    b.append(text(1336, footer_text_y, "BOM v1.1 · 2026-11", 12, FAINT, "end"))
     b.append("</svg>")
 
     OUT.write_text("\n".join(b), encoding="utf-8")

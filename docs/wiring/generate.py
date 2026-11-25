@@ -22,6 +22,7 @@ SIG = "#1f6feb"
 PWR = "#d92b2b"
 GND = "#1c1c1c"
 NTC = "#a85b1a"
+CAP = "#0f766e"
 
 SSR_FILL = "#fff6ea"
 SSR_LINE = "#c07000"
@@ -32,6 +33,7 @@ MCU_LINE = "#2f5478"
 UI_FILL = "#f1f7f1"
 UI_LINE = "#2e7d4f"
 BAND = "#fafbfd"
+CAP_FILL = "#e6f4f1"
 
 
 def esc(s):
@@ -107,6 +109,15 @@ def ntc_sym(x, y_top, h=64, w=26):
     return "".join(out)
 
 
+def cap_sym(x, y_top, w=24):
+    """Vertical ceramic capacitor: two plates, 18px total height."""
+    out = [line(x, y_top, x, y_top + 4, stroke=CAP, sw=2.2)]
+    out.append(line(x - w / 2.0, y_top + 4, x + w / 2.0, y_top + 4, stroke=CAP, sw=3.0))
+    out.append(line(x - w / 2.0, y_top + 12, x + w / 2.0, y_top + 12, stroke=CAP, sw=3.0))
+    out.append(line(x, y_top + 12, x, y_top + 18, stroke=CAP, sw=2.2))
+    return "".join(out)
+
+
 # ---------------------------------------------------------------- 主接线图
 
 ROWS = [
@@ -137,7 +148,7 @@ def wiring_diagram():
     b.append(text(60, 64, "五路温控系统 · 接线图", 30, INK, weight=700))
     b.append(text(60, 98,
                   "Arduino Pro Mini (ATmega328P, 5V/16MHz) · NTC 10kΩ B3950 上拉接法 · "
-                  "SSR 开关加热 · EC11 编码器 · SSD1306 OLED",
+                  "100nF 去耦 · SSR 开关加热 · EC11 编码器 · SSD1306 OLED",
                   15, SUB))
     b.append(text(60, 120,
                   "5 路独立控温 · 爬柜、孵化箱、恒温箱等场景通用",
@@ -222,7 +233,12 @@ def wiring_diagram():
         b.append(poly([(NODE, y + 90), (NODE, y + 104)], stroke=SIG, sw=2.6))
         b.append(gnd_sym(NODE, y + 104, label=False))
         b.append(text(1215, y + 68, "NTC 10kΩ", 12, NTC, weight=600))
-        b.append(text(NODE + 28, y + 118, "GND", 11, FAINT, weight=600))
+        # 通道 5 的 GND 标注改到左侧，给右下角的 ADC 细节框让位
+        if layer == ROWS[-1][0]:
+            b.append(text(NODE - 28, y + 118, "GND", 11, FAINT,
+                          anchor="end", weight=600))
+        else:
+            b.append(text(NODE + 28, y + 118, "GND", 11, FAINT, weight=600))
         b.append(text(NODE, y - 10, "通道%d 测温" % layer, 11.5, FAINT, anchor="middle"))
 
     # ---------------- 控制面板：编码器 + OLED ----------------
@@ -278,27 +294,60 @@ def wiring_diagram():
     b.append(text(ENC_X - 6, ENC_Y + 80, "COM", 10, GND, anchor="end", weight=600))
 
     # OLED VCC / GND
-    b.append(line(OL_X + OL_W, OL_Y + 30, OL_X + 26 + OL_W, OL_Y + 30,
-                  stroke=PWR, sw=2.4))
-    b.append(line(OL_X + 26 + OL_W, OL_Y + 30, OL_X + 26 + OL_W, OL_Y - 6,
-                  stroke=PWR, sw=2.4))
+    vcc_x = OL_X + 150
+    b.append(line(vcc_x, OL_Y, vcc_x, OL_Y - 6, stroke=PWR, sw=2.4))
     b.append(path("M%s %s L%s %s L%s %s Z"
-                  % (OL_X + 19 + OL_W, OL_Y - 18, OL_X + 26 + OL_W, OL_Y - 32,
-                     OL_X + 33 + OL_W, OL_Y - 18), stroke=PWR, sw=1.5, fill=PWR))
-    b.append(text(OL_X + 26 + OL_W, OL_Y - 38, "VCC", 10.5, PWR,
+                  % (vcc_x - 7, OL_Y - 18, vcc_x, OL_Y - 32,
+                     vcc_x + 7, OL_Y - 18), stroke=PWR, sw=1.5, fill=PWR))
+    b.append(text(vcc_x, OL_Y - 38, "VCC", 10.5, PWR,
                   anchor="middle", weight=700))
 
-    b.append(line(OL_X + OL_W, OL_Y + 72, OL_X + 14 + OL_W, OL_Y + 72,
+    gnd_x = OL_X + 80
+    b.append(line(gnd_x, OL_Y + OL_H, gnd_x, OL_Y + OL_H + 18,
                   stroke=GND, sw=2.4))
-    b.append(line(OL_X + 14 + OL_W, OL_Y + 72, OL_X + 14 + OL_W, OL_Y + 96,
-                  stroke=GND, sw=2.4))
-    b.append(gnd_sym(OL_X + 14 + OL_W, OL_Y + 96, label=False))
-    b.append(text(OL_X + 14 + OL_W + 24, OL_Y + 112, "GND", 10, GND, weight=600))
+    b.append(gnd_sym(gnd_x, OL_Y + OL_H + 18, label=False))
+    b.append(text(gnd_x + 14, OL_Y + OL_H + 40, "GND", 10, GND, weight=600))
+
+    # ---------------- 单路 ADC 输入细节（含去耦电容） ----------------
+    DX, DY, DW, DH = 1210, 1064, 360, 234
+    b.append(rect(DX, DY, DW, DH, fill=CAP_FILL, stroke=CAP, sw=1.6, rx=10))
+    b.append(text(DX + 16, DY + 26, "单路 ADC 输入（每路一份）", 13.5, CAP,
+                  weight=700))
+    b.append(text(DX + 16, DY + 46, "上拉分压 + 100nF 低通，靠近板端", 10.5, SUB))
+
+    # VCC → 10kΩ → 节点
+    b.append(vcc_sym(DX + 40, DY + 72))
+    b.append(line(DX + 40, DY + 102, DX + 60, DY + 102, stroke=PWR, sw=2.4))
+    b.append(resistor(DX + 60, DY + 102))
+    b.append(line(DX + 140, DY + 102, DX + 190, DY + 102, stroke=SIG, sw=2.4))
+    b.append(dot(DX + 190, DY + 102, 4.5, SIG))
+    b.append(text(DX + 198, DY + 88, "→ ADC", 10.5, SIG, weight=700))
+
+    # NTC → GND
+    b.append(line(DX + 190, DY + 102, DX + 190, DY + 114, stroke=SIG, sw=2.4))
+    b.append(ntc_sym(DX + 190, DY + 114, h=40, w=20))
+    b.append(line(DX + 190, DY + 154, DX + 190, DY + 164, stroke=SIG, sw=2.4))
+    b.append(gnd_sym(DX + 190, DY + 164, label=False))
+    b.append(text(DX + 96, DY + 146, "NTC", 10.5, NTC, weight=600))
+    b.append(text(DX + 96, DY + 160, "10kΩ", 10.5, NTC, weight=600))
+
+    # 100nF → GND
+    b.append(line(DX + 190, DY + 102, DX + 270, DY + 102, stroke=SIG, sw=2.4))
+    b.append(line(DX + 270, DY + 102, DX + 270, DY + 112, stroke=CAP, sw=2.2))
+    b.append(cap_sym(DX + 270, DY + 112))
+    b.append(line(DX + 270, DY + 130, DX + 270, DY + 150, stroke=CAP, sw=2.2))
+    b.append(gnd_sym(DX + 270, DY + 150, label=False))
+    b.append(text(DX + 284, DY + 124, "100nF", 10.5, CAP, weight=700))
+
+    b.append(line(DX + 16, DY + 186, DX + DW - 16, DY + 186,
+                  stroke="#b7ded6", sw=1.2))
+    b.append(text(DX + 16, DY + 206, "长线再加：板端 1kΩ 串联", 10.5, SUB))
+    b.append(text(DX + 16, DY + 222, "+ 100nF 到 GND，探头端再并 100nF", 10.5, SUB))
 
     # 图例
     b.append(line(60, 1330, 1580, 1330, stroke="#dbe3ec", sw=1.6))
     items = [(SIG, "信号（数字/模拟/I2C）"), (PWR, "VCC / 5V"),
-             (GND, "GND"), (NTC, "NTC / 电阻")]
+             (GND, "GND"), (NTC, "NTC / 电阻"), (CAP, "电容")]
     x = 70
     for color, label in items:
         b.append(line(x, 1362, x + 34, 1362, stroke=color, sw=4))
@@ -308,10 +357,11 @@ def wiring_diagram():
     b.append(text(60, 1412, "接线要点", 14.5, INK, weight=700))
     notes_a = [
         "NTC 与 10kΩ 上拉电阻串联分压，中点接 A0 / A1 / A2 / A3 / A6",
-        "通道1→A0 / 通道2→A1 / 通道3→A2 / 通道4→A3 / 通道5→A6（通道5 用 ADC6，仅模拟输入）",
-        "通道1→D5 / 通道2→D6 / 通道3→D7 / 通道4→D8 / 通道5→D9，接 SSR 输入正极",
-        "编码器 A→D2、B→D3、按键→D4，编码器公共脚接 GND",
-        "OLED：SDA→A4、SCL→A5、VCC→5V、GND→GND",
+        "通道5 用 A6（ADC6，仅模拟输入）；A4 / A5 留给 OLED I2C",
+        "通道1→D5 … 通道5→D9 接 SSR 输入正极，SSR 输入负极接 GND",
+        "编码器 A/B/SW→D2/D3/D4；OLED SDA/SCL→A4/A5",
+        "每路 ADC 节点加 100nF 到 GND；5V 入口加 470–1000µF + 100nF",
+        "Pro Mini VCC / OLED VCC 各加 100nF 去耦，AREF 加 100nF",
     ]
     for i, s in enumerate(notes_a):
         b.append(text(60, 1442 + i * 27, "· " + s, 12.5, SUB))
@@ -320,6 +370,7 @@ def wiring_diagram():
     notes_b = [
         "改线前必须断电；220V 与弱电分区走线，禁止并行缠绕",
         "单 I/O 最大 20mA，5 路 SSR 输入电流需分别核算，超限加三极管",
+        "D5–D9 建议各加 10k 下拉，防止复位/烧录时 SSR 误导通",
         "Pro Mini 无 USB，需 FTDI/ISP 烧录；供电用 RAW 7–12V 或稳压 5V 接 VCC",
         "5 路同时加热时电流较大，5V 电源与地线需留足余量",
     ]

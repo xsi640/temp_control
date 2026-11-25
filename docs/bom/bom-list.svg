@@ -1,14 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1440" viewBox="0 0 1400 1440" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1746" viewBox="0 0 1400 1746" font-family="system-ui, -apple-system, 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif">
 <title>五路温控系统物料清单</title>
 <defs><linearGradient id="bar" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1f6feb"/><stop offset="0.55" stop-color="#2e7d4f"/><stop offset="1" stop-color="#d97706"/></linearGradient></defs>
-<rect x="0" y="0" width="1400" height="1440" rx="0" fill="#ffffff" stroke="none" stroke-width="2"/>
+<rect x="0" y="0" width="1400" height="1746" rx="0" fill="#ffffff" stroke="none" stroke-width="2"/>
 <rect x="0" y="0" width="1400" height="9" rx="0" fill="url(#bar)" stroke="none" stroke-width="2"/>
 <text x="64" y="62" font-size="12" fill="#8b98a6" text-anchor="start" font-weight="700" opacity="1" letter-spacing="1.6">BILL OF MATERIALS · TEMP_CONTROL</text>
 <text x="64" y="116" font-size="38" fill="#16222f" text-anchor="start" font-weight="700" opacity="1">五路温控系统 · 物料清单</text>
-<text x="64" y="151" font-size="15" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">Arduino Pro Mini 5V/16MHz · 5 路 NTC 测温 · 5 路 SSR 加热 · OLED + 旋转编码器</text>
+<text x="64" y="151" font-size="15" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">Arduino Pro Mini 5V/16MHz · 5 路 NTC 测温 · 5 路 SSR 加热 · OLED + 旋转编码器 · 含去耦电容</text>
 <text x="64" y="176" font-size="13" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">可用于爬柜、孵化箱、恒温箱等需要多点独立控温的场景</text>
 <rect x="940" y="186" width="54" height="28" rx="14" fill="#f6f8fb" stroke="#dbe3ec" stroke-width="1"/>
-<text x="967.0" y="205" font-size="11.5" fill="#5b6b7c" text-anchor="middle" font-weight="600" opacity="1">BOM v1.0</text>
+<text x="967.0" y="205" font-size="11.5" fill="#5b6b7c" text-anchor="middle" font-weight="600" opacity="1">BOM v1.1</text>
 <rect x="1060" y="186" width="42" height="28" rx="14" fill="#f6f8fb" stroke="#dbe3ec" stroke-width="1"/>
 <text x="1081.0" y="205" font-size="11.5" fill="#5b6b7c" text-anchor="middle" font-weight="600" opacity="1">2026-11</text>
 <rect x="1140" y="186" width="190" height="28" rx="14" fill="#f6f8fb" stroke="#dbe3ec" stroke-width="1"/>
@@ -30,7 +30,7 @@
 <text x="1058" y="288" font-size="30" fill="#2e7d4f" text-anchor="start" font-weight="700" opacity="1">0x3C</text>
 <text x="1158" y="284" font-size="12.6" fill="#5b6b7c" text-anchor="start" font-weight="600" opacity="1">OLED I2C 地址</text>
 <text x="64" y="372" font-size="19" fill="#16222f" text-anchor="start" font-weight="700" opacity="1">核心物料清单</text>
-<text x="228" y="371" font-size="12" fill="#8b98a6" text-anchor="start" font-weight="400" opacity="1">共 13 项 · 数量按 5 路配置</text>
+<text x="228" y="371" font-size="12" fill="#8b98a6" text-anchor="start" font-weight="400" opacity="1">共 17 项 · 数量按 5 路配置</text>
 <rect x="64" y="392" width="1272" height="44" rx="8" fill="#16222f" stroke="none" stroke-width="2"/>
 <text x="86" y="420" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="700" opacity="1">#</text>
 <text x="154" y="420" font-size="12.5" fill="#ffffff" text-anchor="middle" font-weight="700" opacity="1">类别</text>
@@ -72,68 +72,99 @@
 <rect x="64" y="726" width="1272" height="72" rx="0" fill="#f8fafc" stroke="none" stroke-width="2"/>
 <path d="M64 798 L1336 798" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
 <text x="86" y="761" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">6</text>
-<rect x="123" y="743" width="62" height="24" rx="12" fill="#fdecea" stroke="#b3261e" stroke-width="1.2"/><text x="154.0" y="759" font-size="11.5" fill="#b3261e" text-anchor="middle" font-weight="700" opacity="1">执行</text>
-<text x="212" y="761" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">固态继电器 SSR（DC 控 AC）</text>
-<text x="656" y="761" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">5</text>
-<text x="704" y="753" font-size="12.2" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">输入 3–32V DC；输出 24–380V AC</text>
-<text x="704" y="772" font-size="12.2" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">按加热器电流 ≥2 倍选型，并配散热片</text>
-<path d="M64 856 L1336 856" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
+<rect x="123" y="743" width="62" height="24" rx="12" fill="#e6f4f1" stroke="#0f766e" stroke-width="1.2"/><text x="154.0" y="759" font-size="11.5" fill="#0f766e" text-anchor="middle" font-weight="700" opacity="1">去耦</text>
+<text x="212" y="761" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">100nF 陶瓷电容（X7R 50V）</text>
+<text x="656" y="761" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">10</text>
+<text x="704" y="753" font-size="12.2" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">5 路 ADC + VCC / OLED / AREF / 5V 入口，另备 1 只</text>
+<text x="704" y="772" font-size="12.2" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">靠近引脚安装，引线越短越好</text>
+<path d="M64 870 L1336 870" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
 <text x="86" y="833" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">7</text>
-<rect x="123" y="815" width="62" height="24" rx="12" fill="#f0edf8" stroke="#6b4fa3" stroke-width="1.2"/><text x="154.0" y="831" font-size="11.5" fill="#6b4fa3" text-anchor="middle" font-weight="700" opacity="1">电源</text>
-<text x="212" y="833" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">5V/1A 稳压电源适配器</text>
+<rect x="123" y="815" width="62" height="24" rx="12" fill="#e6f4f1" stroke="#0f766e" stroke-width="1.2"/><text x="154.0" y="831" font-size="11.5" fill="#0f766e" text-anchor="middle" font-weight="700" opacity="1">储能</text>
+<text x="212" y="833" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">电解电容 470–1000µF / ≥16V 低 ESR</text>
 <text x="656" y="833" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">1</text>
-<text x="704" y="833" font-size="12.4" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">独立 5V 直供 VCC；或 7–12V 接 RAW</text>
-<rect x="64" y="856" width="1272" height="58" rx="0" fill="#f8fafc" stroke="none" stroke-width="2"/>
-<path d="M64 914 L1336 914" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
-<text x="86" y="891" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">8</text>
-<rect x="123" y="873" width="62" height="24" rx="12" fill="#e8f0fe" stroke="#1f6feb" stroke-width="1.2"/><text x="154.0" y="889" font-size="11.5" fill="#1f6feb" text-anchor="middle" font-weight="700" opacity="1">烧录</text>
-<text x="212" y="891" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">USB-TTL（CH340 / CP2102 / FT232）</text>
-<text x="656" y="891" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">1</text>
-<text x="704" y="891" font-size="12.4" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">5V 电平；需 DTR 自动复位或手动按 RST</text>
-<path d="M64 972 L1336 972" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
-<text x="86" y="949" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">9</text>
-<rect x="123" y="931" width="62" height="24" rx="12" fill="#fdecea" stroke="#b3261e" stroke-width="1.2"/><text x="154.0" y="947" font-size="11.5" fill="#b3261e" text-anchor="middle" font-weight="700" opacity="1">保护</text>
-<text x="212" y="949" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">220V 保险丝 / 断路器</text>
-<text x="656" y="949" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">1</text>
-<text x="704" y="949" font-size="12.4" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">按总负载电流选择；强电侧安装</text>
-<rect x="64" y="972" width="1272" height="58" rx="0" fill="#f8fafc" stroke="none" stroke-width="2"/>
-<path d="M64 1030 L1336 1030" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
-<text x="86" y="1007" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">10</text>
-<rect x="123" y="989" width="62" height="24" rx="12" fill="#f1f4f7" stroke="#5b6b7c" stroke-width="1.2"/><text x="154.0" y="1005" font-size="11.5" fill="#5b6b7c" text-anchor="middle" font-weight="700" opacity="1">接线</text>
-<text x="212" y="1007" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">5.08mm 接线端子 2P / 3P</text>
-<text x="656" y="1007" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">若干</text>
-<text x="704" y="1007" font-size="12.4" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">SSR、电源、加热器接线</text>
-<path d="M64 1088 L1336 1088" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
-<text x="86" y="1065" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">11</text>
-<rect x="123" y="1047" width="62" height="24" rx="12" fill="#f1f4f7" stroke="#5b6b7c" stroke-width="1.2"/><text x="154.0" y="1063" font-size="11.5" fill="#5b6b7c" text-anchor="middle" font-weight="700" opacity="1">线材</text>
-<text x="212" y="1065" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">弱电线 22–24AWG / 强电线 18–20AWG</text>
-<text x="656" y="1065" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">若干</text>
-<text x="704" y="1065" font-size="12.4" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">强弱电分开走线，避免并行缠绕</text>
-<rect x="64" y="1088" width="1272" height="58" rx="0" fill="#f8fafc" stroke="none" stroke-width="2"/>
-<path d="M64 1146 L1336 1146" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
-<text x="86" y="1123" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">12</text>
-<rect x="123" y="1105" width="62" height="24" rx="12" fill="#f1f4f7" stroke="#5b6b7c" stroke-width="1.2"/><text x="154.0" y="1121" font-size="11.5" fill="#5b6b7c" text-anchor="middle" font-weight="700" opacity="1">辅料</text>
-<text x="212" y="1123" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">热缩管、杜邦线、扎带</text>
-<text x="656" y="1123" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">若干</text>
-<text x="704" y="1123" font-size="12.4" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">绝缘、跳线与线束整理</text>
-<path d="M64 1204 L1336 1204" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
-<text x="86" y="1181" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">13</text>
-<rect x="123" y="1163" width="62" height="24" rx="12" fill="#f1f4f7" stroke="#5b6b7c" stroke-width="1.2"/><text x="154.0" y="1179" font-size="11.5" fill="#5b6b7c" text-anchor="middle" font-weight="700" opacity="1">可选</text>
-<text x="212" y="1181" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">SSR 散热片 / 外壳 / 通风扇</text>
-<text x="656" y="1181" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">可选</text>
-<text x="704" y="1181" font-size="12.4" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">按柜体结构与散热需求配置</text>
-<rect x="64" y="392" width="1272" height="812" rx="8" fill="none" stroke="#dbe3ec" stroke-width="1.2"/>
-<text x="64" y="1246" font-size="14.5" fill="#16222f" text-anchor="start" font-weight="700" opacity="1">选型提示</text>
-<text x="64" y="1272" font-size="12" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">· SSR 输入电流按实物规格核算，常见 10–15mA/路；5V 电源建议 ≥1A 并留余量。</text>
-<text x="64" y="1295" font-size="12" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">· NTC 与 10kΩ 上拉电阻直接决定测温精度，建议 1% 电阻、同批次 B3950 探头。</text>
-<text x="64" y="1318" font-size="12" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">· 阻性加热负载可选过零型 SSR；感性负载需选随机型并按需加 RC 吸收。</text>
-<text x="64" y="1341" font-size="12" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">· 清单为功能最小集；外壳、散热片、端子数量按柜体结构增减。</text>
-<rect x="760" y="1228" width="576" height="132" rx="10" fill="#fdecea" stroke="#b3261e" stroke-width="1.2"/>
-<text x="780" y="1256" font-size="14" fill="#b3261e" text-anchor="start" font-weight="700" opacity="1">安全提示</text>
-<text x="780" y="1283" font-size="11.8" fill="#7f1d1d" text-anchor="start" font-weight="400" opacity="1">· 220V 强电必须断电接线，加保险丝并可靠绝缘。</text>
-<text x="780" y="1307" font-size="11.8" fill="#7f1d1d" text-anchor="start" font-weight="400" opacity="1">· 强弱电分区走线，禁止并行缠绕；金属外壳接地。</text>
-<text x="780" y="1331" font-size="11.8" fill="#7f1d1d" text-anchor="start" font-weight="400" opacity="1">· 烧录和调试时先断开 220V，只保留 5V 弱电。</text>
-<path d="M64 1390 L1336 1390" fill="none" stroke="#dbe3ec" stroke-width="1.2" stroke-linecap="round"/>
-<text x="64" y="1422" font-size="12" fill="#8b98a6" text-anchor="start" font-weight="600" opacity="1">temp_control · 五路温控系统</text>
-<text x="1336" y="1422" font-size="12" fill="#8b98a6" text-anchor="end" font-weight="400" opacity="1">BOM v1.0 · 2026-11</text>
+<text x="704" y="825" font-size="12.2" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">5V 入口并联，吸收 SSR 通断冲击</text>
+<text x="704" y="844" font-size="12.2" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">再并一只 100nF 陶瓷</text>
+<rect x="64" y="870" width="1272" height="72" rx="0" fill="#f8fafc" stroke="none" stroke-width="2"/>
+<path d="M64 942 L1336 942" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
+<text x="86" y="905" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">8</text>
+<rect x="123" y="887" width="62" height="24" rx="12" fill="#e6f4f1" stroke="#0f766e" stroke-width="1.2"/><text x="154.0" y="903" font-size="11.5" fill="#0f766e" text-anchor="middle" font-weight="700" opacity="1">滤波</text>
+<text x="212" y="905" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">10nF 陶瓷电容</text>
+<text x="656" y="905" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">2</text>
+<text x="704" y="897" font-size="12.2" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">编码器 A / B 对 GND，消抖抗扰</text>
+<text x="704" y="916" font-size="12.2" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">线长或误触发时再加</text>
+<path d="M64 1014 L1336 1014" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
+<text x="86" y="977" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">9</text>
+<rect x="123" y="959" width="62" height="24" rx="12" fill="#fdecea" stroke="#b3261e" stroke-width="1.2"/><text x="154.0" y="975" font-size="11.5" fill="#b3261e" text-anchor="middle" font-weight="700" opacity="1">执行</text>
+<text x="212" y="977" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">固态继电器 SSR（DC 控 AC）</text>
+<text x="656" y="977" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">5</text>
+<text x="704" y="969" font-size="12.2" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">输入 3–32V DC；输出 24–380V AC</text>
+<text x="704" y="988" font-size="12.2" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">按加热器电流 ≥2 倍选型，并配散热片</text>
+<rect x="64" y="1014" width="1272" height="58" rx="0" fill="#f8fafc" stroke="none" stroke-width="2"/>
+<path d="M64 1072 L1336 1072" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
+<text x="86" y="1049" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">10</text>
+<rect x="123" y="1031" width="62" height="24" rx="12" fill="#f0edf8" stroke="#6b4fa3" stroke-width="1.2"/><text x="154.0" y="1047" font-size="11.5" fill="#6b4fa3" text-anchor="middle" font-weight="700" opacity="1">电源</text>
+<text x="212" y="1049" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">5V/1A 稳压电源适配器</text>
+<text x="656" y="1049" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">1</text>
+<text x="704" y="1049" font-size="12.4" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">独立 5V 直供 VCC；或 7–12V 接 RAW</text>
+<path d="M64 1130 L1336 1130" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
+<text x="86" y="1107" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">11</text>
+<rect x="123" y="1089" width="62" height="24" rx="12" fill="#e8f0fe" stroke="#1f6feb" stroke-width="1.2"/><text x="154.0" y="1105" font-size="11.5" fill="#1f6feb" text-anchor="middle" font-weight="700" opacity="1">烧录</text>
+<text x="212" y="1107" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">USB-TTL（CH340 / CP2102 / FT232）</text>
+<text x="656" y="1107" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">1</text>
+<text x="704" y="1107" font-size="12.4" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">5V 电平；需 DTR 自动复位或手动按 RST</text>
+<rect x="64" y="1130" width="1272" height="58" rx="0" fill="#f8fafc" stroke="none" stroke-width="2"/>
+<path d="M64 1188 L1336 1188" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
+<text x="86" y="1165" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">12</text>
+<rect x="123" y="1147" width="62" height="24" rx="12" fill="#fdecea" stroke="#b3261e" stroke-width="1.2"/><text x="154.0" y="1163" font-size="11.5" fill="#b3261e" text-anchor="middle" font-weight="700" opacity="1">保护</text>
+<text x="212" y="1165" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">220V 保险丝 / 断路器</text>
+<text x="656" y="1165" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">1</text>
+<text x="704" y="1165" font-size="12.4" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">按总负载电流选择；强电侧安装</text>
+<path d="M64 1246 L1336 1246" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
+<text x="86" y="1223" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">13</text>
+<rect x="123" y="1205" width="62" height="24" rx="12" fill="#f1f4f7" stroke="#5b6b7c" stroke-width="1.2"/><text x="154.0" y="1221" font-size="11.5" fill="#5b6b7c" text-anchor="middle" font-weight="700" opacity="1">接线</text>
+<text x="212" y="1223" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">5.08mm 接线端子 2P / 3P</text>
+<text x="656" y="1223" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">若干</text>
+<text x="704" y="1223" font-size="12.4" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">SSR、电源、加热器接线</text>
+<rect x="64" y="1246" width="1272" height="58" rx="0" fill="#f8fafc" stroke="none" stroke-width="2"/>
+<path d="M64 1304 L1336 1304" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
+<text x="86" y="1281" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">14</text>
+<rect x="123" y="1263" width="62" height="24" rx="12" fill="#f1f4f7" stroke="#5b6b7c" stroke-width="1.2"/><text x="154.0" y="1279" font-size="11.5" fill="#5b6b7c" text-anchor="middle" font-weight="700" opacity="1">线材</text>
+<text x="212" y="1281" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">弱电线 22–24AWG / 强电线 18–20AWG</text>
+<text x="656" y="1281" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">若干</text>
+<text x="704" y="1281" font-size="12.4" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">强弱电分开走线，避免并行缠绕</text>
+<path d="M64 1362 L1336 1362" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
+<text x="86" y="1339" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">15</text>
+<rect x="123" y="1321" width="62" height="24" rx="12" fill="#f1f4f7" stroke="#5b6b7c" stroke-width="1.2"/><text x="154.0" y="1337" font-size="11.5" fill="#5b6b7c" text-anchor="middle" font-weight="700" opacity="1">辅料</text>
+<text x="212" y="1339" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">热缩管、杜邦线、扎带</text>
+<text x="656" y="1339" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">若干</text>
+<text x="704" y="1339" font-size="12.4" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">绝缘、跳线与线束整理</text>
+<rect x="64" y="1362" width="1272" height="58" rx="0" fill="#f8fafc" stroke="none" stroke-width="2"/>
+<path d="M64 1420 L1336 1420" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
+<text x="86" y="1397" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">16</text>
+<rect x="123" y="1379" width="62" height="24" rx="12" fill="#f1f4f7" stroke="#5b6b7c" stroke-width="1.2"/><text x="154.0" y="1395" font-size="11.5" fill="#5b6b7c" text-anchor="middle" font-weight="700" opacity="1">可选</text>
+<text x="212" y="1397" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">SSR 散热片 / 外壳 / 通风扇</text>
+<text x="656" y="1397" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">可选</text>
+<text x="704" y="1397" font-size="12.4" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">按柜体结构与散热需求配置</text>
+<path d="M64 1492 L1336 1492" fill="none" stroke="#dbe3ec" stroke-width="1" stroke-linecap="round"/>
+<text x="86" y="1455" font-size="12.5" fill="#8b98a6" text-anchor="middle" font-weight="600" opacity="1">17</text>
+<rect x="123" y="1437" width="62" height="24" rx="12" fill="#f1f4f7" stroke="#5b6b7c" stroke-width="1.2"/><text x="154.0" y="1453" font-size="11.5" fill="#5b6b7c" text-anchor="middle" font-weight="700" opacity="1">可选</text>
+<text x="212" y="1455" font-size="14.2" fill="#16222f" text-anchor="start" font-weight="600" opacity="1">NTC 长线 RC：1kΩ + 100nF</text>
+<text x="656" y="1455" font-size="14" fill="#16222f" text-anchor="middle" font-weight="700" opacity="1">可选</text>
+<text x="704" y="1447" font-size="12.2" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">板端 1kΩ 串联、100nF 到 GND</text>
+<text x="704" y="1466" font-size="12.2" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">长线或强电干扰场景再加</text>
+<rect x="64" y="392" width="1272" height="1100" rx="8" fill="none" stroke="#dbe3ec" stroke-width="1.2"/>
+<text x="64" y="1534" font-size="14.5" fill="#16222f" text-anchor="start" font-weight="700" opacity="1">选型提示</text>
+<text x="64" y="1560" font-size="12" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">· SSR 输入电流按实物规格核算，常见 10–15mA/路；5V 电源建议 ≥1A 并留余量。</text>
+<text x="64" y="1583" font-size="12" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">· NTC 与 10kΩ 上拉电阻直接决定测温精度，建议 1% 电阻、同批次 B3950 探头。</text>
+<text x="64" y="1606" font-size="12" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">· 100nF 去耦电容靠近引脚安装；5V 入口加 470–1000µF 电解，抑制 SSR 通断冲击。</text>
+<text x="64" y="1629" font-size="12" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">· 阻性加热负载可选过零型 SSR；感性负载需选随机型并按需加 RC 吸收。</text>
+<text x="64" y="1652" font-size="12" fill="#5b6b7c" text-anchor="start" font-weight="400" opacity="1">· 清单为功能最小集；外壳、散热片、端子数量按柜体结构增减。</text>
+<rect x="760" y="1516" width="576" height="132" rx="10" fill="#fdecea" stroke="#b3261e" stroke-width="1.2"/>
+<text x="780" y="1544" font-size="14" fill="#b3261e" text-anchor="start" font-weight="700" opacity="1">安全提示</text>
+<text x="780" y="1571" font-size="11.8" fill="#7f1d1d" text-anchor="start" font-weight="400" opacity="1">· 220V 强电必须断电接线，加保险丝并可靠绝缘。</text>
+<text x="780" y="1595" font-size="11.8" fill="#7f1d1d" text-anchor="start" font-weight="400" opacity="1">· 强弱电分区走线，禁止并行缠绕；金属外壳接地。</text>
+<text x="780" y="1619" font-size="11.8" fill="#7f1d1d" text-anchor="start" font-weight="400" opacity="1">· 烧录和调试时先断开 220V，只保留 5V 弱电。</text>
+<path d="M64 1688 L1336 1688" fill="none" stroke="#dbe3ec" stroke-width="1.2" stroke-linecap="round"/>
+<text x="64" y="1720" font-size="12" fill="#8b98a6" text-anchor="start" font-weight="600" opacity="1">temp_control · 五路温控系统</text>
+<text x="1336" y="1720" font-size="12" fill="#8b98a6" text-anchor="end" font-weight="400" opacity="1">BOM v1.1 · 2026-11</text>
 </svg>
